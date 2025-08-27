@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Submit SNS Proposal",
+      "type": "shell",
+      "command": "npm run submit-proposal",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}

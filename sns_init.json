@@ -1,0 +1,61 @@
+{
+  "dapp_canisters": [],
+  "fallback_controller_principal_ids": [
+    "pkt5m-vzera-uztne-or4se-vgejr-xajuz-ulw55-zdxon-3euz7-gvakp-5qe"
+  ],
+  "token_name": "BEAR Impact Ledger",
+  "token_symbol": "BEAR",
+  "token_logo": "https://bearimpact-pdv.caffeine.xyz/logo.png",
+  "token_decimals": 8,
+  "name": "BEAR SNS",
+  "description": "Decentralized governance + fundraising for global RWA startups under the BEAR (Blockchain-Enabled Advancement Reserve) mission. ICP raised up to $100,000 funds RWA projects by the developer. Any excess ICP goes to the DAO treasury for community rewards and future growth. All RWA revenue is airdropped to participants based on their % of ICP contributed. 10% of RWA profits earmarked for BEAR buybacks.",
+  "url": "https://bearimpact-pdv.caffeine.xyz/",
+  "governance_parameters": {
+    "proposal_reject_cost_e8s": 100000000,
+    "neuron_minimum_stake_e8s": 100000000,
+    "neuron_management_fee_per_proposal_e8s": 0,
+    "max_number_of_proposals_with_ballots": 1000,
+    "wait_for_quiet_deadline_increase_seconds": 86400,
+    "initial_voting_period_seconds": 432000
+  },
+  "initial_token_distribution": {
+    "FractionalDeveloperVotingPower": {
+      "developer_distribution": {
+        "developer_neurons": [
+          {
+            "controller": "pkt5m-vzera-uztne-or4se-vgejr-xajuz-ulw55-zdxon-3euz7-gvakp-5qe",
+            "stake_e8s": 1000000000000,
+            "memo": 1,
+            "dissolve_delay_seconds": 31536000,
+            "vesting_period_seconds": 31536000
+          }
+        ]
+      },
+      "treasury_distribution": {
+        "total_e8s": 2000000000000
+      },
+      "swap_distribution": {
+        "total_e8s": 5000000000000
+      },
+      "airdrop_distribution": {
+        "airdrop_neurons": [
+          {
+            "controller": "pkt5m-vzera-uztne-or4se-vgejr-xajuz-ulw55-zdxon-3euz7-gvakp-5qe",
+            "stake_e8s": 50000000000,
+            "memo": 10001,
+            "dissolve_delay_seconds": 0,
+            "vesting_period_seconds": 0
+          }
+        ]
+      }
+    }
+  },
+  "swap_parameters": {
+    "minimum_participants": 50,
+    "min_icp_e8s": 1000000000,
+    "min_participant_icp_e8s": 100000000,
+    "start_timestamp_seconds": 0,
+    "duration_seconds": 1209600,
+    "neurons_fund_participation": "Unspecified"
+  }
+}

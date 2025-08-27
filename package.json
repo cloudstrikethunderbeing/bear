@@ -1,0 +1,12 @@
+{
+  "name": "sns-proposal-project",
+  "version": "1.0.0",
+  "description": "Scripts and tools to submit a proposal for SNS launch on NNS (Internet Computer)",
+  "main": "index.js",
+  "scripts": {
+    "submit-proposal": "node scripts/submitProposal.js"
+  },
+  "keywords": ["sns", "nns", "internet-computer", "proposal"],
+  "author": "",
+  "license": "MIT"
+}

@@ -1,0 +1,23 @@
+{
+  "canisters": {
+    "bear_frontend": {
+      "type": "assets",
+      "source": ["web/build"],
+      "controller": ["cloudstrikethunderbeing"]
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": "webpack"
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000"
+    },
+    "ic": {
+      "providers": ["https://ic0.app"]
+    }
+  },
+  "version": 1
+}
