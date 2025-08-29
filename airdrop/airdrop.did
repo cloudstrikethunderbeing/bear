@@ -1,0 +1,8 @@
+service : {
+  add_contribution : (principal, nat) -> ();
+  set_treasury : (nat) -> ();
+  monthly_airdrop : () -> ();
+  get_participants : () -> (vec principal);
+  get_treasury : () -> (nat);
+  get_contribution : (principal) -> (nat);
+}

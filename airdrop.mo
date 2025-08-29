@@ -1,8 +1,9 @@
 import SNSLedger "canister:your_sns_ledger_canister_id";
+import Timer "mo:base/Timer";
 
 actor Airdrop {
-  stable var participants : [(Principal, Nat)] = []; // (address, ICP contributed)
-  stable var treasury : Nat = 0; // $BEAR tokens available
+  stable var participants : [(Principal, Nat)] = [];
+  stable var treasury : Nat = 0;
 
   public func addContribution(p : Principal, icp : Nat) : async () {
     let idx = participants.findIndex(func x = x.0 == p);
@@ -18,21 +19,28 @@ actor Airdrop {
   };
 
   public func monthlyAirdrop() : async () {
-    let totalICP = participants.foldLeft(0, func(acc, x) = acc + x.1);
-    let airdropAmount = treasury / 10; // 10% monthly
-    for (p in participants.vals()) {
-      let percent = Float.fromInt(p.1) / Float.fromInt(totalICP);
-      let payout = Nat.fromFloat(Float.fromInt(airdropAmount) * percent);
-      ignore SNSLedger.transfer(p.0, payout); // transfer $BEAR tokens
-    };
-    treasury -= airdropAmount;
-  };
+    let vals = participants.vals();
+    var i = 0;
+    let n = vals.size();
+    while (i < n) {
+      let p = vals[i];
+      let payout = p.1;
+      if (treasury >= payout) {
+        ignore SNSLedger.transfer(p.0, payout);
+        treasury -= payout;
+      } else {
+        ignore SNSLedger.transfer(p.0, treasury);
+        treasury := 0;
+        break;
+      }
+      i += 1;
+    }
+  }
 
-  // Timer setup (call this once after deployment)
   public func startAirdropTimer() : async () {
     Timer.setTimer(
-      #interval(30 * 24 * 60 * 60), // 30 days
+      #interval(30 * 24 * 60 * 60),
       func () { ignore monthlyAirdrop() }
     );
-  };
+  }
 }

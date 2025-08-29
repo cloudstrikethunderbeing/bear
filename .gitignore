@@ -1,0 +1,8 @@
+# Ignore sensitive deployment info and principal/canister ID files
+BEAR_DEPLOYMENT_INFO.txt
+DEPLOYMENT-INFO.txt
+canister_ids.json
+project/canister_ids.json
+*.pem
+*.key
+*.env
