@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "canisters": {
+    "bear_claim": {
+      "type": "custom",
+      "candid": "claim.did",
+      "wasm": ".dfx/local/canisters/bear_claim/bear_claim.wasm",
+      "build": "cargo build --target wasm32-unknown-unknown --release && ic-cdk-optimizer target/wasm32-unknown-unknown/release/bear-claim-canister.wasm -o .dfx/local/canisters/bear_claim/bear_claim.wasm"
+    }
+  },
+  "defaults": { "build": { "args": "" } },
+  "networks": { "local": { "bind": "127.0.0.1:8000" } }
+}

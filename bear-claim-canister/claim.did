@@ -1,0 +1,91 @@
+type Microusd = nat64;           // USD * 1e6
+type Tokens   = nat;             // BEAR base units (use 1e8 decimals)
+type E8s      = nat64;           // ICP e8s
+type Timestamp = nat64;          // seconds since epoch
+
+// ICRC-1 style account reference
+// owner: principal; subaccount: optional 32-byte blob
+// NOTE: encode 32-byte subaccount (if any) in blob form
+
+type Account = record { owner : principal; subaccount : opt blob };
+
+type SnapshotRow = record { owner : principal; bear_tokens : Tokens };
+type ContribRow  = record { owner : principal; icp_e8s : E8s };
+
+// Status of each time-ladder slot
+// Pending -> Ready -> Staked -> Claimed (as your flow requires)
+
+type LadderSlot = record {
+  slot_index : nat8;
+  dissolve_delay_seconds : nat64;
+  amount : Tokens;
+  status : variant { Pending; Ready; Staked; Claimed };
+  neuron_id : opt nat64
+};
+
+type ClaimPreview = record {
+  total_allocation : Tokens;
+  ladder : vec LadderSlot;
+  points_breakdown : record {
+    holder_points : nat64;
+    contributor_points : nat64;
+    total_points : nat64
+  };
+  per_principal_cap_tokens : Tokens;
+  within_cap : bool
+};
+
+type InitConfig = record {
+  sns_root : principal;
+  sns_governance : principal;
+  sns_ledger : principal;
+  icp_ledger : opt principal;
+  airdrop_pool_account : Account;
+  icp_usd_rate_microusd_per_icp : Microusd;
+  claim_start : Timestamp;
+  claim_end : Timestamp;
+  per_principal_max_tokens : Tokens;
+  min_bear_stake_required : Tokens;
+  ii_rate_limit_per_day : nat32;
+  weights : record { w_holder : nat32; w_contrib : nat32 }
+};
+
+service : {
+  // lifecycle
+  init : (InitConfig) -> ();
+
+  // admin (DAO-managed ACL)
+  admin_set_params : (InitConfig) -> ();
+  admin_fund_pool_from_treasury : (Tokens) -> ();
+  admin_ingest_snapshot : (vec SnapshotRow) -> ();
+  admin_ingest_contributions : (vec ContribRow) -> ();
+  admin_close_claims : () -> ();
+  admin_open_claims : (Timestamp, Timestamp) -> ();
+  admin_set_acl : (vec principal) -> ();
+
+  // user flows
+  preview_claim : () -> (ClaimPreview) query;
+  prepare_claim : () -> (record {
+    total_allocation : Tokens;
+    ladder : vec LadderSlot;
+    allowance_instructions : vec record {
+      slot_index : nat8; amount : Tokens; spender : principal; ledger : principal
+    }
+  }) query;
+
+  finalize_slot : (nat8) -> (variant { ok : LadderSlot; err : text });
+  finalize_all  : () -> (variant { ok : vec LadderSlot; err : text });
+
+  has_claimed : (principal) -> (bool) query;
+  get_status : () -> (record {
+    pool_balance : Tokens;
+    total_points : nat64;
+    claimed_count : nat32;
+    claim_window : record { start : Timestamp; end_ : Timestamp }
+  }) query;
+
+  // revenue distribution (optional)
+  dist_register_shares_from_contribs : () -> ();
+  dist_execute_payout_icp  : (E8s)   -> (variant { ok; err : text });
+  dist_execute_payout_bear : (Tokens)-> (variant { ok; err : text })
+}
