@@ -13,25 +13,59 @@ pub type Tokens   = u128;   // BEAR base units
 pub type E8s      = u64;    // ICP e8s
 pub type Timestamp= u64;    // seconds
 
-#[derive(Clone, CandidType, Deserialize, Serialize, Debug, Default)]
+#[derive(Clone, CandidType, Deserialize, Serialize, Debug)]
 pub struct Account { pub owner: Principal, pub subaccount: Option<Vec<u8>> }
 
-#[derive(Clone, CandidType, Deserialize, Serialize, Debug, Default)]
+impl Default for Account {
+    fn default() -> Self {
+        Self { owner: Principal::anonymous(), subaccount: None }
+    }
+}
+
+#[derive(Clone, CandidType, Deserialize, Serialize, Debug)]
 pub struct SnapshotRow { pub owner: Principal, pub bear_tokens: Tokens }
 
-#[derive(Clone, CandidType, Deserialize, Serialize, Debug, Default)]
+impl Default for SnapshotRow {
+    fn default() -> Self {
+        Self { owner: Principal::anonymous(), bear_tokens: 0 }
+    }
+}
+
+#[derive(Clone, CandidType, Deserialize, Serialize, Debug)]
 pub struct ContribRow  { pub owner: Principal, pub icp_e8s: E8s }
+
+impl Default for ContribRow {
+    fn default() -> Self {
+        Self { owner: Principal::anonymous(), icp_e8s: 0 }
+    }
+}
 
 #[derive(Clone, CandidType, Deserialize, Serialize, Debug)]
 pub enum SlotStatus { Pending, Ready, Staked, Claimed }
 
-#[derive(Clone, CandidType, Deserialize, Serialize, Debug, Default)]
+impl Default for SlotStatus {
+    fn default() -> Self { SlotStatus::Pending }
+}
+
+#[derive(Clone, CandidType, Deserialize, Serialize, Debug)]
 pub struct LadderSlot {
     pub slot_index: u8,
     pub dissolve_delay_seconds: u64,
     pub amount: Tokens,
     pub status: SlotStatus,
     pub neuron_id: Option<u64>,
+}
+
+impl Default for LadderSlot {
+    fn default() -> Self {
+        Self {
+            slot_index: 0,
+            dissolve_delay_seconds: 0,
+            amount: 0,
+            status: SlotStatus::default(),
+            neuron_id: None,
+        }
+    }
 }
 
 #[derive(Clone, CandidType, Deserialize, Serialize, Debug, Default)]
@@ -46,7 +80,7 @@ pub struct ClaimPreview {
 #[derive(Clone, CandidType, Deserialize, Serialize, Debug, Default)]
 pub struct PointsBreakdown { pub holder_points: u64, pub contributor_points: u64, pub total_points: u64 }
 
-#[derive(Clone, CandidType, Deserialize, Serialize, Debug, Default)]
+#[derive(Clone, CandidType, Deserialize, Serialize, Debug)]
 pub struct InitConfig {
     pub sns_root: Principal,
     pub sns_governance: Principal,
@@ -62,10 +96,29 @@ pub struct InitConfig {
     pub weights: Weights,
 }
 
+impl Default for InitConfig {
+    fn default() -> Self {
+        Self {
+            sns_root: Principal::anonymous(),
+            sns_governance: Principal::anonymous(),
+            sns_ledger: Principal::anonymous(),
+            icp_ledger: None,
+            airdrop_pool_account: Account::default(),
+            icp_usd_rate_microusd_per_icp: 0,
+            claim_start: 0,
+            claim_end: 0,
+            per_principal_max_tokens: 0,
+            min_bear_stake_required: 0,
+            ii_rate_limit_per_day: 0,
+            weights: Weights::default(),
+        }
+    }
+}
+
 #[derive(Clone, CandidType, Deserialize, Serialize, Debug, Default)]
 pub struct Weights { pub w_holder: u32, pub w_contrib: u32 }
 
-#[derive(CandidType, Deserialize, Serialize, Debug, Default)]
+#[derive(CandidType, Deserialize, Serialize, Debug, Default, Clone)]
 pub struct ClaimRecord {
     pub total_allocation: Tokens,
     pub ladder: Vec<LadderSlot>,
@@ -73,7 +126,7 @@ pub struct ClaimRecord {
     pub last_claim_ts: Option<Timestamp>,
 }
 
-#[derive(CandidType, Deserialize, Serialize, Debug, Default)]
+#[derive(CandidType, Deserialize, Serialize, Debug, Default, Clone)]
 pub struct State {
     pub admins: BTreeSet<Principal>,
     pub config: InitConfig,

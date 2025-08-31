@@ -5,7 +5,7 @@
       "type": "custom",
       "candid": "claim.did",
       "wasm": ".dfx/local/canisters/bear_claim/bear_claim.wasm",
-      "build": "cargo build --target wasm32-unknown-unknown --release && ic-cdk-optimizer target/wasm32-unknown-unknown/release/bear-claim-canister.wasm -o .dfx/local/canisters/bear_claim/bear_claim.wasm"
+  "build": "cargo build --target wasm32-unknown-unknown --release && cp target/wasm32-unknown-unknown/release/bear_claim_canister.wasm .dfx/local/canisters/bear_claim/bear_claim.wasm"
     }
   },
   "defaults": { "build": { "args": "" } },
