@@ -1,3 +1,9 @@
+{
+  "canisters": {
+    "bear_frontend": {
+      "type": "assets",
+      "source": ["src/www/assets"],
+      "controller": ["cloudstrikethunderbeing"]
     },
     "airdrop": {
       "type": "rust",

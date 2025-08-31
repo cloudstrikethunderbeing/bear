@@ -4,13 +4,7 @@
       "type": "assets",
       "source": ["src/www/assets"],
       "controller": ["cloudstrikethunderbeing"]
-    },
-    "airdrop": {
-      "type": "rust",
-      "main": "airdrop/lib.rs",
-      "candid": "airdrop/airdrop.did",
-      "package": "airdrop"
-    }
+  }
   },
   "defaults": {},
   "networks": {
