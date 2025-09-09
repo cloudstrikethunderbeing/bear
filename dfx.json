@@ -4,7 +4,13 @@
       "type": "assets",
       "source": ["src/www/assets"],
       "controller": ["cloudstrikethunderbeing"]
-  }
+    },
+    "bear-claim-canister": {
+      "type": "custom",
+      "wasm": "bear-claim-canister/optimized_bear_claim.wasm",
+      "candid": "bear-claim-canister/claim.did",
+      "controller": ["cloudstrikethunderbeing"]
+    }
   },
   "defaults": {},
   "networks": {

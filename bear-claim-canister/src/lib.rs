@@ -1,9 +1,44 @@
+// --- DAO/BEAR RWA, ROI, USDC payout, fundraising pools ---
+
+#[derive(Clone, CandidType, Deserialize, Serialize, Debug, Default)]
+pub struct DividendPayment {
+    pub amount_usdc: u64,
+    pub paid_at: Option<Timestamp>,
+    pub tx_hash: Option<String>,
+}
+
+#[derive(Clone, CandidType, Deserialize, Serialize, Debug, Default)]
+pub struct FundraisingPool {
+    pub name: String,
+    pub target_usd: u64,
+    pub raised_usd: u64,
+    pub participants: Vec<Principal>,
+    pub status: String, // Open, Closed, Distributed
+}
+
+#[derive(Clone, CandidType, Deserialize, Serialize, Debug, Default)]
+pub struct RwaParticipant {
+    pub rwa_allocation_usd: u64,
+    pub dividends: Vec<DividendPayment>,
+    pub initial_contribution_time: Timestamp,
+    pub withdrawal_requested: bool,
+    pub withdrawal_approved: bool,
+    pub withdrawal_time: Option<Timestamp>,
+    pub roi_percent: u8,
+    pub last_roi_increment: Timestamp,
+    pub eligible_for_withdrawal: bool,
+    pub usdc_wallet: Option<String>,
+}
+
 use candid::{CandidType, Deserialize, Principal};
+use ic_cdk::{query, update};
+use ic_cdk_macros::{init, pre_upgrade, post_upgrade};
+use ic_http_certification::{HttpRequest, HttpResponse};
+use serde::Serialize;
 use ic_cdk::api::{call::call, time};
 use ic_cdk::caller;
 use ic_cdk_macros::*;
 use once_cell::sync::Lazy;
-use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
 
 // ===== Aliases / Units =====
@@ -94,6 +129,8 @@ pub struct InitConfig {
     pub min_bear_stake_required: Tokens,
     pub ii_rate_limit_per_day: u32,
     pub weights: Weights,
+    // OpenChat bot compatibility
+    pub oc_public_key: Option<String>,
 }
 
 impl Default for InitConfig {
@@ -111,6 +148,7 @@ impl Default for InitConfig {
             min_bear_stake_required: 0,
             ii_rate_limit_per_day: 0,
             weights: Weights::default(),
+            oc_public_key: None,
         }
     }
 }
@@ -146,6 +184,42 @@ pub struct State {
     // User-state
     pub claims: BTreeMap<Principal, ClaimRecord>,
     pub claimed_count: u32,
+
+    // --- DAO/BEAR extensions ---
+    pub rwa_pool_usd: u64,
+    pub rwa_participants: BTreeMap<Principal, RwaParticipant>,
+    pub fundraising_pools: Vec<FundraisingPool>,
+    pub legacy_bear_holders: BTreeSet<Principal>,
+}
+// --- Admin dashboard endpoints (stubs) ---
+#[query]
+fn admin_list_participants() -> Vec<Principal> {
+    state().claims.keys().cloned().collect()
+}
+
+#[query]
+fn admin_get_participant(p: Principal) -> Option<RwaParticipant> {
+    state().rwa_participants.get(&p).cloned()
+}
+
+#[update]
+fn admin_mark_usdc_sent(p: Principal, payment: DividendPayment) {
+    require_admin();
+    state().rwa_participants.entry(p).or_default().dividends.push(payment);
+}
+
+#[update]
+fn admin_approve_withdrawal(p: Principal) {
+    require_admin();
+    if let Some(rwa) = state().rwa_participants.get_mut(&p) {
+        rwa.withdrawal_approved = true;
+        rwa.withdrawal_time = Some(now());
+    }
+}
+
+#[query]
+fn admin_export_participants() -> Vec<(Principal, RwaParticipant)> {
+    state().rwa_participants.iter().map(|(k,v)| (k.clone(), v.clone())).collect()
 }
 
 static mut STATE: Option<State> = None;
@@ -173,7 +247,83 @@ fn init(cfg: InitConfig) {
     s.admins.insert(caller()); // bootstrap: caller is admin; rotate via admin_set_acl
     s.pool_balance = 0;
     s.claim_window = (cfg.claim_start, cfg.claim_end);
+    // Store OpenChat public key if provided
+    if let Some(pk) = cfg.oc_public_key.clone() {
+        s.config.oc_public_key = Some(pk);
+    }
     unsafe { STATE = Some(s); }
+}
+// ===== OpenChat Bot HTTP Endpoints =====
+fn process_message(msg: &str) -> String {
+    let msg_lower = msg.to_lowercase();
+    // Moderation: block banned words
+    let banned = ["spam", "scam", "offensive"];
+    for word in &banned {
+        if msg_lower.contains(word) {
+            return "[Moderation] Message blocked due to inappropriate content.".to_string();
+        }
+    }
+
+    // Reminder: /remind me to <task> at <time>
+    if msg_lower.starts_with("/remind me to ") {
+        return "[Reminder] Reminder set! (Note: actual scheduling not implemented in this scaffold)".to_string();
+    }
+
+    // Greet: /greet or hello
+    if msg_lower.starts_with("/greet") || msg_lower.contains("hello") {
+        return "[Greet] Hello! I am BEAR Bot. How can I help you today?".to_string();
+    }
+
+    // Emoji reaction: /react <word>
+    if msg_lower.starts_with("/react ") {
+        return "[Reaction] 🐻".to_string();
+    }
+
+    // Adventure/Game: /adventure
+    if msg_lower.starts_with("/adventure") {
+        return "[Adventure] You enter a mysterious cave. Type /adventure again to continue!".to_string();
+    }
+
+    // Info/Utility: /help or /info
+    if msg_lower.starts_with("/help") || msg_lower.starts_with("/info") {
+        return "[Info] Commands: /greet, /remind me to <task> at <time>, /react <word>, /adventure, /claim, /balance, /help".to_string();
+    }
+
+    // SNS Claim logic: /claim or /balance
+    if msg_lower.starts_with("/claim") {
+        return "[SNS] To claim your BEAR tokens, visit the dapp or use the /balance command.".to_string();
+    }
+    if msg_lower.starts_with("/balance") {
+        // In a real implementation, fetch and return the user's balance
+        return "[SNS] Your BEAR balance is: 0 (demo only)".to_string();
+    }
+
+    // Echo fallback
+    format!("[Echo] {}", msg)
+}
+
+#[query]
+async fn http_request(req: HttpRequest<'_>) -> HttpResponse<'_> {
+    let msg = String::from_utf8_lossy(req.body());
+    let reply = process_message(&msg);
+    HttpResponse {
+        status_code: 200,
+        headers: vec![("content-type".to_string(), "text/plain".to_string())],
+        body: reply.into_bytes().into(),
+        upgrade: None,
+    }
+}
+
+#[update]
+async fn http_request_update(req: HttpRequest<'_>) -> HttpResponse<'_> {
+    let msg = String::from_utf8_lossy(req.body());
+    let reply = process_message(&msg);
+    HttpResponse {
+        status_code: 200,
+        headers: vec![("content-type".to_string(), "text/plain".to_string())],
+        body: reply.into_bytes().into(),
+        upgrade: None,
+    }
 }
 
 #[pre_upgrade]
