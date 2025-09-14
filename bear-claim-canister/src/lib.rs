@@ -1,3 +1,23 @@
+#[derive(Clone, CandidType, Deserialize, Serialize, Debug, Default)]
+pub struct TransferRecord {
+    pub amount_usdc: u64,
+    pub direction: TransferDirection,
+    pub sender: Option<Principal>,
+    pub recipient: Option<Principal>,
+    pub timestamp: Timestamp,
+    pub tx_hash: Option<String>,
+    pub notes: Option<String>,
+}
+
+#[derive(Clone, CandidType, Deserialize, Serialize, Debug)]
+pub enum TransferDirection {
+    In,
+    Out,
+}
+
+impl Default for TransferDirection {
+    fn default() -> Self { TransferDirection::In }
+}
 // --- DAO/BEAR RWA, ROI, USDC payout, fundraising pools ---
 
 #[derive(Clone, CandidType, Deserialize, Serialize, Debug, Default)]
@@ -190,11 +210,49 @@ pub struct State {
     pub rwa_participants: BTreeMap<Principal, RwaParticipant>,
     pub fundraising_pools: Vec<FundraisingPool>,
     pub legacy_bear_holders: BTreeSet<Principal>,
+
+    // USDC transfer log
+    pub usdc_transfers: Vec<TransferRecord>,
 }
 // --- Admin dashboard endpoints (stubs) ---
 #[query]
 fn admin_list_participants() -> Vec<Principal> {
     state().claims.keys().cloned().collect()
+}
+
+#[query]
+fn admin_list_usdc_transfers() -> Vec<TransferRecord> {
+    state().usdc_transfers.clone()
+}
+
+#[update]
+fn admin_register_usdc_in(amount_usdc: u64, tx_hash: Option<String>, notes: Option<String>) {
+    require_admin();
+    let rec = TransferRecord {
+        amount_usdc,
+        direction: TransferDirection::In,
+        sender: Some(caller()),
+        recipient: None,
+        timestamp: now(),
+        tx_hash,
+        notes,
+    };
+    state().usdc_transfers.push(rec);
+}
+
+#[update]
+fn admin_register_usdc_out(amount_usdc: u64, recipient: Principal, tx_hash: Option<String>, notes: Option<String>) {
+    require_admin();
+    let rec = TransferRecord {
+        amount_usdc,
+        direction: TransferDirection::Out,
+        sender: Some(caller()),
+        recipient: Some(recipient),
+        timestamp: now(),
+        tx_hash,
+        notes,
+    };
+    state().usdc_transfers.push(rec);
 }
 
 #[query]
@@ -206,6 +264,17 @@ fn admin_get_participant(p: Principal) -> Option<RwaParticipant> {
 fn admin_mark_usdc_sent(p: Principal, payment: DividendPayment) {
     require_admin();
     state().rwa_participants.entry(p).or_default().dividends.push(payment);
+    // Log outgoing USDC transfer for ROI payout
+    let rec = TransferRecord {
+        amount_usdc: payment.amount_usdc,
+        direction: TransferDirection::Out,
+        sender: Some(caller()),
+        recipient: Some(p),
+        timestamp: payment.paid_at.unwrap_or_else(now),
+        tx_hash: payment.tx_hash.clone(),
+        notes: Some("ROI payout".to_string()),
+    };
+    state().usdc_transfers.push(rec);
 }
 
 #[update]
