@@ -1,0 +1,26 @@
+{
+  "canisters": {
+    "bear_frontend": {
+      "type": "assets",
+      "source": ["project/web/public"],
+      "controller": ["cloudstrikethunderbeing"]
+    },
+    "bear-claim-canister": {
+      "type": "custom",
+      "wasm": "bear-claim-canister/optimized_bear_claim.wasm",
+      "candid": "bear-claim-canister/claim.did",
+      "controller": ["cloudstrikethunderbeing"],
+  "init": { "file": "bear-claim-canister/init_args.did" }
+    }
+  },
+  "defaults": {},
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000"
+    },
+    "ic": {
+      "providers": ["https://ic0.app"]
+    }
+  },
+  "version": 1
+}

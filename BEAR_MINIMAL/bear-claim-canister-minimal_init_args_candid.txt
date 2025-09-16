@@ -1,0 +1,17 @@
+(
+  record {
+    sns_root = principal "r3ug2-gaaaa-aaaam-qd3qa-cai";
+    sns_governance = principal "wbqcd-ziaaa-aaaam-aeooq-cai";
+    sns_ledger = principal "wtwv2-vyaaa-aaaam-aeonq-cai";
+    icp_ledger = null;
+    airdrop_pool_account = record { owner = principal "pkt5m-vzera-uztne-or4se-vgejr-xajuz-ulw55-zdxon-3euz7-gvakp-5qe"; subaccount = null };
+    icp_usd_rate_microusd_per_icp = 1000000 : nat64;
+    claim_start = 1694649600 : nat64;
+    claim_end = 1999999999 : nat64;
+    per_principal_max_tokens = 100000000000 : nat;
+    min_bear_stake_required = 100000000 : nat;
+    ii_rate_limit_per_day = 10 : nat32;
+    weights = record { w_holder = 1 : nat32; w_contrib = 1 : nat32 };
+    oc_public_key = null;
+  }
+)

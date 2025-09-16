@@ -1,0 +1,86 @@
+{
+  "dapp_canisters": [
+    "wtwv2-vyaaa-aaaam-aeonq-cai",
+    "kne3m-5yaaa-aaaah-qp7vq-cai",
+    "zccyp-mqaaa-aaaak-qufxq-cai",
+    "r3ug2-gaaaa-aaaam-qd3qa-cai"
+  ],
+  "fallback_controller_principal_ids": [
+    "2j6hj-zxlij-lrzwc-acbpe-rgzo6-yzamx-vmxxg-nn2le-rxtrd-bvvtb-iae",
+    "pkt5m-vzera-uztne-or4se-vgejr-xajuz-ulw55-zdxon-3euz7-gvakp-5qe"
+  ],
+  "token_name": "BEAR Impact Ledger",
+  "token_symbol": "BEAR",
+  "token_logo": "https://bearimpact-pdv.caffeine.xyz/logo.png",
+  "token_decimals": 8,
+  "name": "BEAR SNS",
+  "description": "Decentralized governance + fundraising for global RWA startups under the BEAR mission. ICP up to $100,000 funds RWA projects; excess ICP goes to DAO treasury for rewards and growth. All RWA revenue is airdropped to participants based on ICP contribution %.",
+  "url": "https://bearimpact-pdv.caffeine.xyz",
+  "governance_parameters": {
+    "transaction_fee_e8s": 10000,
+    "proposal_rejection_fee_e8s": 100000000,
+    "neuron_minimum_stake_e8s": 100000000,
+    "initial_voting_period_seconds": 432000,
+    "wait_for_quiet_deadline_increase_seconds": 86400,
+    "max_proposals_to_keep_per_topic": 1000,
+    "minimum_dissolve_delay_seconds": 15552000,
+    "max_dissolve_delay_seconds": 252288000,
+    "max_neuron_age_for_age_bonus_seconds": 126144000,
+    "dissolve_delay_bonus_percentage": 100,
+    "dissolve_delay_bonus_duration_seconds": 252288000,
+    "age_bonus_percentage": 25,
+    "age_bonus_duration_seconds": 126144000,
+    "reward_rate": {
+      "initial": 0.03,
+      "final": 0.01,
+      "transition_duration_seconds": 126144000
+    }
+  },
+  "initial_token_distribution": {
+    "FractionalDeveloperVotingPower": {
+      "developer_distribution": {
+        "developer_neurons": [
+          {
+            "principal": "2j6hj-zxlij-lrzwc-acbpe-rgzo6-yzamx-vmxxg-nn2le-rxtrd-bvvtb-iae",
+            "stake": "8600000000000",
+            "memo": 1,
+            "dissolve_delay_seconds": 126144000,
+            "vesting_period_seconds": 94608000
+          }
+        ]
+      },
+      "treasury_distribution": {
+        "total": "25000000000000"
+      },
+      "swap_distribution": {
+        "total": "40000000000000"
+      },
+      "airdrop_distribution": {
+        "airdrop_neurons": [
+          {
+            "principal": "pkt5m-vzera-uztne-or4se-vgejr-xajuz-ulw55-zdxon-3euz7-gvakp-5qe",
+            "stake": "200000000000",
+            "memo": 1001,
+            "dissolve_delay_seconds": 15552000
+          }
+        ]
+      }
+    }
+  },
+  "swap_parameters": {
+    "start_time": "16:00 UTC",
+    "duration_seconds": 1209600,
+    "min_icp_e8s": 1000000000,
+    "max_icp_e8s": 12000000000000,
+    "min_participant_icp_e8s": 100000000,
+    "max_participant_icp_e8s": 50000000000,
+    "minimum_participants": 50,
+    "neuron_basket_construction_parameters": {
+      "count": 8,
+      "dissolve_delay_interval_seconds": 15552000
+    },
+    "neurons_fund_participation": "DISALLOW",
+    "confirmation_text": "I understand this swap is for BEAR governance tokens and that vesting/dissolve delays apply. I acknowledge risks and confirm I’m eligible to participate.",
+    "restricted_countries": []
+  }
+}
